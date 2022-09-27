@@ -51,21 +51,6 @@ const App = () => {
       })
 
     }
-    // let token = localStorage.token;
-    // settokensnip(token)
-
-    // const fundAccount = (bals)=>{
-    
-  
-      
-     
-     
-
-  
-     
-     
-
-    // }
 
 
   

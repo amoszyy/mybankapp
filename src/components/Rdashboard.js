@@ -30,12 +30,24 @@ const Rdashboard = ({user}) => {
   // const [test, settest] = useState("")
   const [walletarray, setwalletarray] = useState([])
   const [rtransferamount, setrtransferamount] = useState("")
+  const [signedinaccountno, setsignedinaccountno] = useState(0)
+  const [signedinbalance, setsignedinbalance] = useState(0)
+  const [signedinfirstname, setsignedinfirstname] = useState("")
+  const [transactionmessage, settransactionmessage] = useState("")
+
+  useEffect(() => {
+    getsignedinuser()
+    // accountFunder()
+  
+  }, [])
+  
 
   const [foundArray, setfoundArray] = useState([])
   const accountFunder=()=>{
    let token= localStorage.token
     
-   let currentUserbal = user.balance;
+  //  let currentUserbal = user.balance;
+  let currentUserbal = signedinbalance;
    
    let  newuserbal = Number(amount) + Number(currentUserbal);
    let transactionDetails = {amount, token, newuserbal}
@@ -46,13 +58,15 @@ const Rdashboard = ({user}) => {
       console.log(newuserbal)
      
       console.log(result.data.message)
+      setsignedinbalance(result.data.result.balance)
+      settransactionmessage(result.data.message)
 
     })
 
   }
   const withdraw = ()=>{
     let token = localStorage.token
-    let currentUserbals = user.balance;
+    let currentUserbals = signedinbalance;
     let newuserbals = Number(currentUserbals) - Number(withdrawalamount);
     let transactionDetailss = {withdrawalamount, token, newuserbals}
     // const withdrawalpoint = "http://localhost:5005/user/withdrawal"
@@ -60,6 +74,7 @@ const Rdashboard = ({user}) => {
     axios.post(withdrawalpoint, transactionDetailss).then((result)=>{
       console.log(newuserbals)
       console.log(result.data.message)
+      settransactionmessage(result.data.message)
     })
 
   }
@@ -75,6 +90,18 @@ const Rdashboard = ({user}) => {
   
    
   },[])
+  const getsignedinuser=()=>{
+    let endpointuserdeets = "https://amosbank.herokuapp.com/user/getuserdetails"
+    let token = localStorage.token;
+    let userinfo ={token}
+    axios.post(endpointuserdeets, userinfo).then((result)=>{
+      console.log(result)
+      console.log(result.data.result.accountNumber)
+      setsignedinaccountno(result.data.result.accountNumber)
+      setsignedinbalance(result.data.result.balance)
+      setsignedinfirstname(result.data.result.firstname)
+    })
+  }
   const createWallet =()=>{
 
     let token = localStorage.token;
@@ -160,6 +187,7 @@ const Rdashboard = ({user}) => {
       console.log(receiverdeets)
     })
   }
+
  
   
       
@@ -170,6 +198,7 @@ const Rdashboard = ({user}) => {
     <>   
     <section className='body'>
     <div>
+    
       {/* <Navbar/> */}
          <div className='container-fluid d-md-block d-none'>
             <div className='row'>
@@ -181,25 +210,26 @@ const Rdashboard = ({user}) => {
                       <li className="nav-item nav-link text-white pt-2 " data-bs-toggle="modal" data-bs-target="#modelId"><i class="fa fa-credit-card-alt" aria-hidden="true"></i><a href="#" style={{textDecoration:"none"}} className="text-white"><b>withdraw</b></a></li>
                     <li className="nav-item nav-link text-dark" data-bs-toggle="modal" data-bs-target="#modelIdcreate"><i class="fa fa-credit-card-alt" aria-hidden="true"></i><a href="#" style={{textDecoration:"none"}} className="text-white"><b>create new wallet</b></a></li>
                     <li className="nav-item nav-link text-white" data-bs-toggle="modal" data-bs-target="#modelId"><i class="fa fa-credit-card-alt" aria-hidden="true"></i><a href="#" style={{textDecoration:"none"}} className="text-white"><b>Transfer</b></a></li>
+                    <Link to={'/transaction'} style={{textDecoration:"none"}} className='text-dark'> <b >transactionDetails</b> </Link>
            
                     
                     
 
                 </div>
                 <div className='col-md-6 bg-light '>
-                  <h1 className='text-dark'>Welcome {user.firstname}</h1>
+                  <h1 className='text-dark'>Welcome {signedinfirstname}</h1>
                   {/* <button onClick={getWallet}>test get</button> */}
                   <div className='container-fluid '>
                     <div className='row border border-2 border-dark pt-3 pb-3'>
                       <div className='col-md-1 col-1'></div>
                         <div className='col-md-3 col-4 rounded-4 bg-light h-100 shadow pt-3 pb-3'>
                           <p>account no:</p>
-                          <b>{user.accountNumber}</b>
+                          <b>{signedinaccountno}</b>
                         </div>
                         <div className='col-md-1 col-1'></div>
                         <div className='col-md-3 col-4 bg-light rounded-4 h-100 shadow pt-3 pb-3'>
                           <p >balance:</p>
-                          <b>${user.balance}</b>
+                          <b>${signedinbalance}</b>
                           {/* <h1>{displayWamount}</h1> */}
                         </div>
                     </div>
@@ -349,7 +379,7 @@ const Rdashboard = ({user}) => {
         <div className='row'>
             <div className='col-4'>
                 <button className='btn'>acc 1 of 1</button>
-                <b className='text-dark'>Welcome {user.firstname}</b>
+                <b className='text-dark'>Welcome {signedinfirstname}</b>
             </div>
             <div className='col-5'></div>
             <div className='col-3'>
@@ -359,8 +389,8 @@ const Rdashboard = ({user}) => {
         <div className='row'>
             <div className='col-6'>
                 <p className='text-white'>Savings account</p>
-                <b>acc no:{user.accountNumber}</b><br />
-                <b>${user.balance}</b>
+                <b>acc no: {signedinaccountno}</b><br />
+                <b>$ {signedinbalance}</b>
                 
                 <b></b>
                 <b></b>
@@ -441,8 +471,9 @@ const Rdashboard = ({user}) => {
                 <div className='col-12 mx-auto'>
                 <i class="fa-solid fa-money-bill"></i><br />
                 </div>
+                <Link to={"/transaction"} style={{textDecoration:"none"}} className='text-dark'><b>transaction Details</b></Link>
            
-            <b>branch</b>
+           
             </div>
             <div className='col-3'>
                 {/* <div className='col-6 mx-auto'> */}
@@ -500,11 +531,13 @@ const Rdashboard = ({user}) => {
       <div className="modal-content">
           <div className="modal-header">
               <h5 className="modal-title">proceed</h5>
+             
                     <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
         <div className="modal-body">
           <div className="container-fluid">
-            <input type="text" className='form-control' placeholder='amount' onChange={(e)=>setamount(e.target.value)}/>
+          <h2 className='text-success'>{transactionmessage}</h2>
+            <input type="number" className='form-control' placeholder='amount' onChange={(e)=>setamount(e.target.value)}/>
             
           </div>
         </div>
@@ -524,7 +557,8 @@ const Rdashboard = ({user}) => {
             </div>
         <div className="modal-body">
           <div className="container-fluid">
-            <input type="text" className='form-control' placeholder='amount' onChange={(e)=>setwithdrawalamount(e.target.value)}/>
+          <h2 className='text-success'>{transactionmessage}</h2>
+            <input type="number" className='form-control' placeholder='amount' onChange={(e)=>setwithdrawalamount(e.target.value)}/>
             
           </div>
         </div>
